@@ -152,22 +152,91 @@ async function vote(car) {
     }
 }
 
+// DOM elements for search
+const searchInput = document.getElementById("searchInput");
+const searchButton = document.getElementById("searchButton");
+
+// Function to search for a car by name
+async function searchCar() {
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    if (!searchTerm) {
+        message.textContent = "Please enter a car name to search.";
+        setTimeout(() => {
+            message.textContent = "";
+        }, 2000);
+        return;
+    }
+
+    try {
+        // Fetch all votes from Firestore
+        const votesQuery = query(collection(db, "votes"));
+        const votesSnapshot = await getDocs(votesQuery);
+
+        let foundCar = null;
+        votesSnapshot.forEach((doc) => {
+            const car = cars.find(car => car.id.toString() === doc.id);
+            if (car && car.name.toLowerCase().includes(searchTerm)) {
+                foundCar = {
+                    name: car.name,
+                    votes: doc.data().votes,
+                    image: car.image,
+                };
+            }
+        });
+
+        if (foundCar) {
+            // Display the search result
+            message.innerHTML = `
+                <strong>${foundCar.name}</strong><br>
+                Votes: ${foundCar.votes}<br>
+                <img src="${foundCar.image}" alt="${foundCar.name}" style="width: 200px; margin-top: 10px;">
+            `;
+        } else {
+            message.textContent = "No car found with that name.";
+            setTimeout(() => {
+                message.textContent = "";
+            }, 2000);
+        }
+    } catch (error) {
+        console.error("Error searching for car:", error);
+        message.textContent = "Failed to search. Please try again.";
+    }
+}
+
+
+
+// Event listener for the search button
+searchButton.addEventListener("click", searchCar);
+
+// Optional: Allow pressing "Enter" to trigger search
+searchInput.addEventListener("keypress", (event) => {
+    if (event.key === "Enter") {
+        searchCar();
+    }
+});
+
 // Function to update the leaderboard
 async function updateLeaderboard() {
     const leaderboardList = document.getElementById("leaderboardList");
+    const totalVotesElement = document.getElementById("totalVotes");
     leaderboardList.innerHTML = "<li>Loading leaderboard...</li>";
 
     try {
-        // Fetch all votes from Firestore, ordered by votes in descending order
         const votesQuery = query(collection(db, "votes"), orderBy("votes", "desc"));
         const votesSnapshot = await getDocs(votesQuery);
 
+        let totalVotes = 0;
         leaderboardList.innerHTML = "";
         votesSnapshot.forEach((doc) => {
+            const votes = doc.data().votes;
+            totalVotes += votes;
             const li = document.createElement("li");
-            li.textContent = `${cars.find(car => car.id.toString() === doc.id)?.name || `Car ${doc.id}`}: ${doc.data().votes} votes`;
+            li.textContent = `${cars.find(car => car.id.toString() === doc.id)?.name || `Car ${doc.id}`}: ${votes} votes`;
             leaderboardList.appendChild(li);
         });
+
+        // Update total votes
+        totalVotesElement.textContent = totalVotes;
     } catch (error) {
         console.error("Error fetching leaderboard:", error);
         leaderboardList.innerHTML = "<li>Failed to load leaderboard. Please try again.</li>";

@@ -147,3 +147,41 @@ button:hover {
   will-change: opacity;
   animation: fadeIn 1s ease-in-out;
 }
+
+#searchBar {
+  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+  height: 6vh;
+}
+
+#searchInput {
+  padding: 10px 5px;
+  width: 300px;
+  border: 2px solid #00ffcc;
+  border-radius: 5px;
+  font-size: 15px;
+  height: 3vh;
+}
+
+#searchButton {
+  padding: 10px 20px;
+  margin-left: 10px;
+  background-color: #00ffcc;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  align-items: center;
+}
+
+#searchButton:hover {
+  background-color: #00ccaa;
+}
+
+footer {
+  font-family: 'Helvetica', sans-serif;
+  background: linear-gradient(135deg, var(--background-color), #1a9f70);
+  padding: 2px;
+  text-align: center;
+}
